@@ -2,6 +2,17 @@
 
 基于 Google Apps Script 的全自动面试流程管理工具。通过 Gmail + Gemini AI + Google Calendar + LINE Bot 实现：自动读取面试邮件 → AI 分析意图 → 智能排期 → 自动生成回复草稿 → LINE 通知确认 → 一键发送。
 
+## 📸 效果展示
+
+<p align="center">
+  <img src="docs/images/screenshot1.png" width="45%" alt="Dashboard Overview" />
+  <img src="docs/images/screenshot2.png" width="45%" alt="Dashboard Detail" />
+</p>
+<p align="center">
+  <img src="docs/images/screenshot3.jpg" width="45%" alt="LINE Bot Notification" />
+  <img src="docs/images/screenshot4.jpg" width="45%" alt="LINE Bot Interaction" />
+</p>
+
 ---
 
 ## ⚠️ 敏感信息说明
@@ -344,4 +355,3 @@ A: 每次修改代码后需要重新部署（**新建部署，而非更新旧部
 | Gmail (GAS 内置) | 读取面试邮件、发送回复 | 免费 |
 | Google Calendar (GAS 内置) | 管理面试日程 | 免费 |
 | Google Sheets (GAS 内置) | 数据持久化存储 | 免费 |
-[图片][图片]
