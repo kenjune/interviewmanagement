@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+
+  <link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap"
+  rel="stylesheet">
+
+<style>
+
+body {
+  background: linear-gradient(135deg,#f6f8fb,#eef2f7);
+  font-family: 'Noto Sans JP', sans-serif;
+  color:#2c3e50;
+}
+
+.main-container{
+  max-width:1300px;
+  margin:auto;
+  padding:25px;
+}
+
+/* stat cards */
+
+.stat-card{
+  background:white;
+  border-radius:14px;
+  padding:22px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.05);
+  transition:0.25s;
+}
+
+.stat-card:hover{
+  transform:translateY(-4px);
+}
+
+.stat-val{
+  font-size:26px;
+  font-weight:700;
+}
+
+.stat-label{
+  color:#7f8c8d;
+  font-size:13px;
+}
+
+/* page tabs */
+
+.page-tabs{
+  background:white;
+  border-radius:14px;
+  padding:8px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.04);
+  margin-bottom:20px;
+}
+
+.page-tab{
+  padding:10px 18px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:600;
+  color:#7f8c8d;
+}
+
+.page-tab.is-active{
+  background:#edf4ff;
+  color:#3273dc;
+}
+
+/* cards */
+
+.app-card{
+  background:white;
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:16px;
+  box-shadow:0 4px 14px rgba(0,0,0,0.05);
+  border-left:6px solid transparent;
+  transition:0.25s;
+}
+
+.app-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+.status-processing{
+  border-left-color:#3273dc;
+}
+
+.status-offer{
+  border-left-color:#23d160;
+}
+
+.status-rejected{
+  border-left-color:#ff3860;
+}
+
+.note-input{
+  font-size:13px;
+  border-radius:8px;
+}
+
+.note-input:focus{
+  border-color:#3273dc;
+  box-shadow:0 0 0 2px rgba(50,115,220,0.15);
+}
+
+/* schedule */
+
+.schedule-box{
+  background:white;
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 4px 14px rgba(0,0,0,0.05);
+}
+
+.schedule-item{
+  padding:10px;
+  border-radius:8px;
+  transition:0.2s;
+}
+
+.schedule-item:hover{
+  background:#f7f9fc;
+}
+
+.loading-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(255,255,255,0.92);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:999;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="app" class="main-container">
+
+<div v-if="loading" class="loading-overlay">
+<i class="fas fa-circle-notch fa-spin fa-3x has-text-info mb-4"></i>
+<p class="has-text-grey">Loading dashboard...</p>
+</div>
+
+
+<div v-if="error" class="notification is-danger is-light">
+<button class="delete" @click="error=null"></button>
+{{error}}
+</div>
+
+
+<div v-if="!loading">
+
+<!-- stat -->
+
+<div class="columns">
+
+<div class="column">
+<div class="stat-card">
+<div class="stat-val">{{stats.processing}}</div>
+<div class="stat-label">进行中</div>
+</div>
+</div>
+
+<div class="column">
+<div class="stat-card">
+<div class="stat-val">{{stats.offer}}</div>
+<div class="stat-label">Offer</div>
+</div>
+</div>
+
+<div class="column">
+<div class="stat-card">
+<div class="stat-val">{{stats.rejected}}</div>
+<div class="stat-label">已拒绝</div>
+</div>
+</div>
+
+</div>
+
+
+<!-- page tabs -->
+
+<div class="page-tabs">
+
+<div class="buttons">
+
+<div class="page-tab"
+:class="{'is-active':currentPage==='processing'}"
+@click="currentPage='processing'">
+
+<i class="fas fa-spinner mr-1"></i>
+进行中 ({{stats.processing}})
+
+</div>
+
+<div class="page-tab"
+:class="{'is-active':currentPage==='offer'}"
+@click="currentPage='offer'">
+
+<i class="fas fa-trophy mr-1"></i>
+Offer ({{stats.offer}})
+
+</div>
+
+<div class="page-tab"
+:class="{'is-active':currentPage==='rejected'}"
+@click="currentPage='rejected'">
+
+<i class="fas fa-times-circle mr-1"></i>
+已拒绝 ({{stats.rejected}})
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="columns">
+
+<!-- main -->
+
+<div class="column is-9">
+
+
+<div v-if="filteredApps.length===0"
+class="has-text-centered has-text-grey-light mt-6">
+
+<i class="fas fa-folder-open fa-3x mb-3"></i>
+
+<p>No records</p>
+
+</div>
+
+
+<div v-for="item in filteredApps"
+:key="item.threadId"
+class="app-card"
+:class="statusClass(item.status)">
+
+<div class="columns">
+
+<div class="column is-8">
+
+<div class="is-flex is-align-items-center mb-2">
+
+<span class="tag mr-2">
+{{formatDate(item.timestamp)}}
+</span>
+
+<h3 class="title is-5 mb-0">
+{{item.company}}
+</h3>
+
+</div>
+
+
+<p class="is-size-7 has-text-grey">
+
+Round {{item.round}}
+
+<span v-if="item.summary">
+
+• AI: {{item.summary}}
+
+</span>
+
+</p>
+
+
+<textarea
+class="textarea note-input mt-2"
+rows="2"
+v-model="item.note"
+@change="saveNote(item)"
+placeholder="Notes...">
+</textarea>
+
+</div>
+
+
+<div class="column is-4 has-text-right">
+
+<span class="tag"
+:class="tagClass(item.status)">
+{{item.status}}
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- schedule -->
+
+<div class="column is-3">
+
+<div class="schedule-box">
+
+<h4 class="title is-6">
+
+<i class="fas fa-calendar mr-2"></i>
+
+Schedule
+
+</h4>
+
+<div v-if="schedule.length===0"
+class="has-text-grey-light">
+
+No schedule
+
+</div>
+
+<div v-for="evt in schedule"
+class="schedule-item">
+
+<strong>
+
+{{evt.start}}
+
+</strong>
+
+<br>
+
+<span class="is-size-7">
+
+{{evt.title}}
+
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+
+
+<script>
+
+new Vue({
+
+el:"#app",
+
+data:{
+
+loading:true,
+error:null,
+
+apps:[],
+schedule:[],
+config:{},
+
+currentPage:"processing"
+
+},
+
+
+computed:{
+
+stats(){
+
+return{
+
+offer:this.apps.filter(x=>this.isOffer(x.status)).length,
+
+processing:this.apps.filter(x=>this.isProcessing(x.status)).length,
+
+rejected:this.apps.filter(x=>this.isRejected(x.status)).length
+
+}
+
+},
+
+filteredApps(){
+
+if(this.currentPage==="offer")
+
+return this.apps.filter(x=>this.isOffer(x.status))
+
+if(this.currentPage==="rejected")
+
+return this.apps.filter(x=>this.isRejected(x.status))
+
+return this.apps.filter(x=>this.isProcessing(x.status))
+
+}
+
+},
+
+
+methods:{
+
+
+isOffer(status){
+
+return status.includes("Offer")||status.includes("内定")
+
+},
+
+isRejected(status){
+
+return status.includes("不採用")||status.includes("Rejection")
+
+},
+
+isProcessing(status){
+
+return !this.isOffer(status)&&!this.isRejected(status)
+
+},
+
+
+statusClass(status){
+
+if(this.isOffer(status))return"status-offer"
+
+if(this.isRejected(status))return"status-rejected"
+
+return"status-processing"
+
+},
+
+tagClass(status){
+
+if(this.isOffer(status))return"is-success"
+
+if(this.isRejected(status))return"is-danger"
+
+return"is-info"
+
+},
+
+formatDate(str){
+
+return str?str.split(" ")[0]:""
+
+},
+
+saveNote(item){
+
+google.script.run.apiSaveNote(item.threadId,item.note)
+
+},
+
+fetchData(){
+
+google.script.run
+
+.withSuccessHandler(res=>{
+
+if(res.success){
+
+this.apps=res.applications
+
+this.schedule=res.schedule
+
+this.config=res.config
+
+}else{
+
+this.error=res.error
+
+}
+
+this.loading=false
+
+})
+
+.withFailureHandler(err=>{
+
+this.error=err.message
+
+this.loading=false
+
+})
+
+.getFullDashboardData()
+
+}
+
+},
+
+
+created(){
+
+this.fetchData()
+
+}
+
+})
+
+</script>
+
+</body>
+
+</html>
