@@ -180,6 +180,7 @@ interviewmanagement/
 2. 点击菜单栏 **扩展程序 (Extensions)** → **Apps Script**
 3. 这会自动创建一个绑定该 Sheets 的 GAS 项目
 4. 好处：`SpreadsheetApp.getActiveSpreadsheet()` 自动指向该 Sheets，无需手动填 `SHEET_ID`
+## 5. 注意命名 规则   Config/Config 好像scripts栏没有多层目录的功能
 
 #### 方式 B：通过 clasp 推送（本项目方式）
 
