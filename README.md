@@ -1,5 +1,8 @@
 # 🤖 AI 面试管理系统 (Interview Management)
 
+# vibe coding by gemini and abit of manual coding
+
+
 基于 Google Apps Script 的全自动面试流程管理工具。通过 Gmail + Gemini AI + Google Calendar + LINE Bot 实现：自动读取面试邮件 → AI 分析意图 → 智能排期 → 自动生成回复草稿 → LINE 通知确认 → 一键发送。
 
 ## 📸 效果展示
